@@ -3,7 +3,8 @@ Wordle Solver Bot
 Author: Abigail Lee
 Date: 2026-03-13
 Description: Automatically plays and solves Wordle using logic-based filtering.
-             Includes simulation modes for debugging and player view.
+             Includes modes for debugging and player view.
+             Includes simulation methods to find average number of attempts.
 """
 
 import random as rnd
