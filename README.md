@@ -36,9 +36,9 @@ The solver maintains a list of possible candidate words and progressively filter
 
 ## Modes
 
-Play Mode: Simulates a standard Wordle game with up to 6 guesses.
-Debug Mode: Shows internal solver logic and remaining candidate words after each guess.
-Simulation Mode: Runs multiple games and calculates the average number of guesses.
+- Play Mode: Simulates a standard Wordle game with up to 6 guesses.
+- Debug Mode: Shows internal solver logic and remaining candidate words after each guess.
+- Simulation Mode: Runs multiple games and calculates the average number of guesses.
 
 ---
 
