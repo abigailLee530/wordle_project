@@ -216,7 +216,7 @@ def simulate_multiple_games(n):
         
 
 #Uncomment to play
-#play()
+play()
 
 # Uncomment to see internal solver process
 #show_play()
