@@ -8,6 +8,7 @@ Description: Automatically plays and solves Wordle using logic-based filtering.
 """
 
 import random as rnd
+import api
 
 # Load the list of possible Wordle words from file
 text = open('wordle_words.txt')
@@ -34,25 +35,16 @@ def pick_next_guess():
     return rnd.choice(candidate_words)
 
 
-def pick_target_word():
-    """
-    Randomly select the target word for the current game.
-    """
-    return rnd.choice(word_bank)
 
 
-def filter_grey_letters(target, guess):
+def filter_grey_letters(grey_letters):
     """
     Remove words that contain letters not present in the target word (grey letters).
     Implements Wordle's 'grey' filtering rule.
     """
-    grey_letters = []
+
     words_to_remove = []
 
-    # Identify letters in the guess that are not in the target
-    for letter in guess:
-        if letter not in target and letter not in grey_letters:
-            grey_letters.append(letter)
 
     # Mark candidate words containing grey letters for removal
     for word in candidate_words:
@@ -66,19 +58,14 @@ def filter_grey_letters(target, guess):
         candidate_words.remove(word)
 
 
-def filter_yellow_letters(target, guess):
+def filter_yellow_letters(guess, yellow_positions):
     """
     Remove words that violate 'yellow letter' rules:
     - Must contain the letter
     - Must not have the letter in the same position as in the guess
     """
-    yellow_positions = []
     words_to_remove = []
 
-    # Identify positions of yellow letters in the guess
-    for i in range(5):
-        if guess[i] != target[i] and guess[i] in target:
-            yellow_positions.append(i)
 
     # Filter out words that do not satisfy yellow letter rules
     for word in candidate_words:
@@ -91,24 +78,19 @@ def filter_yellow_letters(target, guess):
         candidate_words.remove(word)
 
 
-def filter_green_letters(target, guess):
+def filter_green_letters(guess, green_positions):
     """
     Remove words that do not match confirmed green letters:
     - Letters correctly guessed in the correct positions
     """
-    green_positions = []
 
-    # Identify positions of green letters in the guess
-    for i in range(5):
-        if guess[i] == target[i]:
-            green_positions.append(i)
 
     words_to_remove = []
 
     # Remove words that do not match green letter positions
     for word in candidate_words:
         for idx in green_positions:
-            if word[idx] != target[idx]:
+            if guess[idx] != word[idx]:
                 words_to_remove.append(word)
                 break
 
@@ -123,7 +105,6 @@ def show_play():
     - Shows remaining candidate words after filtering
     - Useful for debugging or demonstration purposes
     """
-    target = pick_target_word()
     guess = pick_next_guess()
 
     while guess != target:
@@ -151,22 +132,25 @@ def play():
     global candidate_words
     candidate_words = word_bank.copy()  # Reset candidate words for each game
     
-    target = pick_target_word()
-    guess = pick_next_guess()
+    g = pick_next_guess()
+    correct = api.isCorrect(g)
     current_attempts = 1
 
-    while guess != target and current_attempts <= 6:
-        print("Guess " + str(current_attempts) + ": " + guess)
+    while not correct and current_attempts <= 6:
+        print("Guess " + str(current_attempts) + ": " + g)
+        
+        grey, yellow, green = api.formatResponse(api.guess(g))
 
-        filter_green_letters(target, guess)
-        filter_yellow_letters(target, guess)
-        filter_grey_letters(target, guess)
+        filter_green_letters(g, green)
+        filter_yellow_letters(g, yellow)
+        filter_grey_letters(grey)
 
-        guess = pick_next_guess()
+        g = pick_next_guess()
+        correct = api.isCorrect(g)
         current_attempts += 1
 
-    print("Guess " + str(current_attempts) + ": " + guess)
-    print("Correct! The word is: " + guess)
+    print("Guess " + str(current_attempts) + ": " + g)
+    print("Correct! The word is: " + g)
 
 
 def simulate_single_game_attempts():
