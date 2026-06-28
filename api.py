@@ -34,10 +34,10 @@ def formatResponse(response_dict):
             yellow.append(index)
         
         else:
-            grey.append(item.get("char"))
+            grey.append(index)
         
         index+=1
     return grey, yellow, green
 
 
-print(formatResponse(guess("woods")))
+#print(formatResponse(guess("words")))

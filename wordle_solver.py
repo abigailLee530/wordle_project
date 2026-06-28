@@ -32,12 +32,15 @@ def pick_next_guess():
     """
     Select the next guess randomly from the remaining candidate words.
     """
-    return rnd.choice(candidate_words)
+    if(len(candidate_words) ==0):
+        return "word not in word bank"
+    else:
+        return rnd.choice(candidate_words)
 
 
 
 
-def filter_grey_letters(grey_letters):
+def filter_grey_letters(guess, grey_positions):
     """
     Remove words that contain letters not present in the target word (grey letters).
     Implements Wordle's 'grey' filtering rule.
@@ -45,11 +48,10 @@ def filter_grey_letters(grey_letters):
 
     words_to_remove = []
 
-
     # Mark candidate words containing grey letters for removal
     for word in candidate_words:
-        for letter in grey_letters:
-            if letter in word:
+        for index in grey_positions:
+            if guess[index] in word:
                 words_to_remove.append(word)
                 break
 
@@ -64,8 +66,8 @@ def filter_yellow_letters(guess, yellow_positions):
     - Must contain the letter
     - Must not have the letter in the same position as in the guess
     """
+    
     words_to_remove = []
-
 
     # Filter out words that do not satisfy yellow letter rules
     for word in candidate_words:
@@ -83,7 +85,6 @@ def filter_green_letters(guess, green_positions):
     Remove words that do not match confirmed green letters:
     - Letters correctly guessed in the correct positions
     """
-
 
     words_to_remove = []
 
@@ -105,22 +106,30 @@ def show_play():
     - Shows remaining candidate words after filtering
     - Useful for debugging or demonstration purposes
     """
-    guess = pick_next_guess()
+    g = pick_next_guess()
+    correct = api.isCorrect(g)
+    current_attempts = 1
 
-    while guess != target:
-        print("Guess: " + guess)
-        print("Target: " + target)
+    while not correct and current_attempts <= 6:
+        print("Guess " + str(current_attempts) + ": " + g)
+        
+        grey, yellow, green = api.formatResponse(api.guess(g))
 
-        filter_green_letters(target, guess)
-        filter_yellow_letters(target, guess)
-        filter_grey_letters(target, guess)
+        filter_green_letters(g, green)
+        filter_yellow_letters(g, yellow)
+        filter_grey_letters(g, grey) 
 
         print("Remaining candidate words:", candidate_words)
         print()
-        guess = pick_next_guess()
+        
+        g = pick_next_guess()
+        if(g == "word not in word bank"):
+            print(g)
+            return
+        correct = api.isCorrect(g)
+        current_attempts += 1
 
-    print("Correct! The word is: " + guess)
-    print("Check: " + target)
+    print("Correct! The word is: " + g)
 
 
 def play():
@@ -143,9 +152,13 @@ def play():
 
         filter_green_letters(g, green)
         filter_yellow_letters(g, yellow)
-        filter_grey_letters(grey)
+        filter_grey_letters(g, grey)
 
         g = pick_next_guess()
+        if(g == "word not in word bank"):
+            print(g)
+            return
+        
         correct = api.isCorrect(g)
         current_attempts += 1
 
@@ -164,17 +177,25 @@ def simulate_single_game_attempts():
     global candidate_words
     candidate_words = word_bank.copy()  # Reset candidate words for this game
 
-    target = pick_target_word()
-    guess = pick_next_guess()
-    attempts = 1
+    g = pick_next_guess()
+    correct = api.isCorrect(g)
+    current_attempts = 1
 
-    while guess != target and attempts <= 6:
-        filter_green_letters(target, guess)
-        filter_yellow_letters(target, guess)
-        filter_grey_letters(target, guess)
+    while not correct and current_attempts <= 6:
+        
+        grey, yellow, green = api.formatResponse(api.guess(g))
 
-        guess = pick_next_guess()
-        attempts += 1
+        filter_green_letters(g, green)
+        filter_yellow_letters(g, yellow)
+        filter_grey_letters(grey)
+
+        g = pick_next_guess()
+        if(g == "word not in word bank"):
+            print(g)
+            return
+        correct = api.isCorrect(g)
+        current_attempts += 1
+
 
     return attempts
 
